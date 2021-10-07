@@ -1,0 +1,155 @@
+---
+title: "Part 1: Rstudio Data Exploration"
+assignment: Homework 1 Part 1
+name: Supratik Pochampally
+output:
+  html_document:
+    df_print: paged
+---
+
+***
+
+### Step 1
+
+The "Boston" data set contains 506 rows and 14 columns that include data about housing values in Suburbs of Boston. The data frame contains columns of data for factors such as per capital crime rate by town, pupil-teacher ration by town, full-value property-tax rate per \$10,000, and more. 
+
+The data was pulled from J. Environ. Economics and Management by Harrison, D. and Rubinfeld, D.L. as well as Regression Diagnostics. Identifying Influential Data and Sources of Colluniearity by Belsley D.A., Kuh, E., and Welsch, R.E.
+
+```{r}
+library(MASS) #load library
+
+data(Boston) #load data into memory
+
+str(Boston) #overview of data
+```
+
+***
+
+### Step 2
+
+```{r}
+head(Boston) #display first few rows (6)
+
+tail(Boston, n=2) #display last 2 rows
+
+Boston[5, ] #display row 5
+
+head(Boston)[, 1] #display first few rows of column 1 (6)
+
+colnames(Boston) #display variable names
+```
+
+***
+
+### Step 3
+
+```{r}
+mean(Boston[, "crim"]) #mean of crim column
+
+median(Boston[, "crim"]) #median of crim column
+
+range(Boston[, "crim"]) #minimum and maximum values of the crim column
+
+max(Boston[, "crim"]) - min(Boston[, "crim"]) #range of crim column
+```
+
+***
+
+### Step 4
+
+This histogram shows us that towns in Boston suburbs have a high frequency of very low per capita crime rate (<10%). This means that per capita crime rate is low overall, as there are very few towns with higher per capita crime rates.
+
+
+```{r}
+hist(Boston[, "crim"], main="Frequency of Per Capita Crime Rate by Town in Boston Suburbs", xlab="Per capita crime rate by town") #histogram of crim column with appropriate labels
+```
+
+***
+
+### Step 5
+
+The cor() function returns the quantified correlation of the columns that are passed into it.
+
+The correlation between crime and median house value is **-0.3883046**, which means that that there is a **weak negative correlation** between the two, which would be plotted as a negative slope, indicating that it would be difficult to predict median house value using the crime column.  
+
+
+```{r}
+cor(Boston["crim"], Boston["medv"]) #correlation between crim and medv
+```
+
+***
+
+### Step 6
+
+The correlation value of **0.6953599** and the graph show that there is a fairly strong **positive correlation** between median value of homes and number of rooms, showed by the correlation being close to +1 and the plot depicting a positive slope.
+
+```{r}
+plot(Boston$rm, Boston$medv, col="red", pch=23, main="Median housing value and Number of rooms in Boston Suburbs", xlab="Number of Rooms", ylab="Median value /$1000s") #plot between rm and medv with appropriate labels and varying point color and style
+
+cor(Boston["rm"], Boston["medv"]) #correlation between rm and medv
+```
+
+***
+
+### Step 7
+
+Using is.factor(), we can conclude that chas is not a factor. 
+
+The first plot (where chas is not a factor) shows a range of value for the chas value on the x-axis and the median value on the y-axis, while the second plot (where chas is a factor) shows a classification of 0 or 1 on the x-axis. The plot shows that there is a weak-to-no correlation between the chas and medv values. 
+
+0 and 1 in the "chas" column correspond if the tract does not bound the Charles River and if the tract does bound to the Charles River (0 and 1 respectively). This is stated to be a dummy variable in the data set, which is further shown by the weak-to-no correlation between chas and medv. 
+
+```{r}
+is.factor(Boston$chas) #checks if chas is a factor
+
+plot(Boston$chas, Boston$medv, main="Median housing value and Bound to Charles River", xlab="Tract is bounded to Charles River", ylab="Median value /$1000s") #plot between chas and medv with appropriate labels
+
+plot(factor(Boston$chas), Boston$medv, main="Median housing value and Bound to Charles River (Factored)", xlab="Tract is bounded to Charles River (Factored)", ylab="Median value /$1000s") #plot of factored chas and medv with appropriate labels
+```
+
+***
+
+### Step 8
+
+The rad variable represents the index of accessibility to radial highways from Suburban housing in Boston. 
+
+* Using the typeof() function, we can conclude that rad is an **integer** variable. 
+* Using summary() function shows us the **minimum, 1st quartile, median, mean, 3rd quartile, and maximum** values of the rad column. 
+  + On the other hand, the unique() function returns a vector of **unique values of rad**, eliminating any duplicate elements. 
+* Using the sum() function, we can conclude that there are **132 neighborhoods** with a rad value equal to 24.
+  + Lastly, we can use R code to determine the percentage of neighborhoods that have a rad value of 24 using nrow(), which computes to be **26.08696%**
+
+
+```{r}
+typeof(Boston$rad) #displays the type of variable of rad
+summary(Boston$rad) #displays summary of rad including min., 1stqu., median, mean, 2rd qu., and max.
+unique(Boston$rad) #displays unique values of rad
+sum(Boston$rad == 24) #displays number of rows where rad is 24
+sum(Boston$rad == 24) / nrow(Boston) * 100 #calculates percentage of neighborhoods where rad is 24
+```
+
+***
+
+### Step 9
+
+The box plot shows that suburbs in Boston with high accessibility to radial highways tend to have a lower median value than suburbs with lower accessibility to radial highways. 
+
+```{r}
+plot(factor(ifelse(Boston$rad == 24, far <- TRUE, far <- FALSE)), Boston$medv, main="Median housing value and Accessibility to radial highways", xlab="Index of accessibility to radial highways is 24", ylab="Median value /$1000s") #plots neighborhoods based on whether or not their rad is 24 and their medv with appropriate labels
+```
+
+***
+
+### Step 10
+
+* Neighborhood 162 has one of the highest median values compared to the entire city of Boston. 
+* The per capita crime rate in town of neighborhood 162 is below average in relation to the rest of Boston, yet above the median, likely because there is a very high maximum per capita crime rate by town offsetting the average. 
+* Furthermore, the average number of rooms per dwelling in neighborhood 162 is higher than the 3rd quartile value compared to the rest of the city, which is sensible considering our previous discovery of a positive correlation between number of rooms and median value (from Step 6).
+* Lastly, the lower status of the population percent in neighborhood 162 is one of the lowest out of all suburbs in Boston. 
+
+```{r}
+summary(Boston[, c(1, 6, 13, 14)]) #displays summary of crim, rm, lstat, and medv, including their min., 1st qu., median, mean, 3rd qu., and max.
+which.max(Boston$medv) #displays the row of the neighborhood with the highest medv
+Boston[which.max(Boston$medv), c(1, 6, 13, 14)] #displays the crim, rm, lstat, and medv of the neighborhood with the highest medv
+```
+
